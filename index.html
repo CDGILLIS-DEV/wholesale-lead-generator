@@ -33,7 +33,7 @@
 
   <!-- Top Announcement Bar -->
   <div class="announcement-bar" id="announcement-bar">
-    <p>🚚 <strong>Special Alert:</strong>Truckloads Just Arrived! <a href="#lead-section" class="announcement-link">Reserve Yours Now &rarr;</a></p>
+    <p>🚚 <strong>Special Alert:</strong> Truckloads Just Arrived! <a href="#lead-section" class="announcement-link">Reserve Yours Now &rarr;</a></p>
   </div>
 
   <!-- Header & Navigation -->
@@ -139,6 +139,12 @@
             <p>No credit card required. Free inventory catalog download.</p>
           </div>
           <form id="lead-capture-form" class="lead-form" novalidate>
+            <!-- Honeypot field for bot/spam protection -->
+            <div style="display:none;" aria-hidden="true">
+              <label for="fax-number">Fax Number</label>
+              <input type="text" id="fax-number" name="faxNumber" tabindex="-1" autocomplete="off">
+            </div>
+
             <div class="form-grid-2">
               <div class="form-group">
                 <label for="first-name">First Name <span class="required">*</span></label>
@@ -486,7 +492,6 @@
       </div>
     </section>
 
-
     <!-- Testimonials Section -->
     <section class="testimonials-section" id="testimonials-section">
       <div class="container">
@@ -495,13 +500,14 @@
           <h2 class="section-title text-light">Get Started Today</h2>
           <p class="section-desc text-muted">Business owners JUST LIKE YOU have scaled their operations using our wholesale liquidation inventory.</p>
         </div>
-          <div class="final-cta-actions">
-            <a href="#lead-section" class="btn btn-accent btn-large" id="final-inquiry-btn">
-              Start
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </a>
-          </div>
-      </section>
+        <div class="final-cta-actions">
+          <a href="#lead-section" class="btn btn-accent btn-large" id="final-inquiry-btn">
+            Start
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    </section>
 
     <!-- FAQ Section -->
     <section class="faq-section" id="faq-section">
@@ -619,11 +625,11 @@
         <ul class="contact-details" role="list">
           <li class="contact-item">
             <span class="c-icon">📞</span>
-            <a href="tel:+18005550199" class="contact-link" id="footer-phone-link">+1 (470) 374-0003</a>
+            <a href="tel:+14703740003" class="contact-link" id="footer-phone-link">+1 (470) 374-0003</a>
           </li>
           <li class="contact-item">
             <span class="c-icon">✉️</span>
-            <a href="mailto:sales@liquidationcorp.example.com" class="contact-link" id="footer-email-link">sales@simpaticoliquidations.com</a>
+            <a href="mailto:sales@simpaticoliquidations.com" class="contact-link" id="footer-email-link">sales@simpaticoliquidations.com</a>
           </li>
           <li class="contact-item">
             <span class="c-icon">⏰</span>
@@ -683,7 +689,7 @@
       <div class="modal-success-icon">✓</div>
       <h3 class="modal-title">Registration Successful!</h3>
       <p class="modal-text">Your request has been received. One of our dedicated wholesale account specialists will email you our current inventory sheets and contact you shortly.</p>
-      <button class="btn btn-primary" id="close-modal-btn">Access Dashboard</button>
+      <button class="btn btn-primary" id="close-modal-btn">Close</button>
     </div>
   </div>
 

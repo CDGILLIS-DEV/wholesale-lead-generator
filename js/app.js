@@ -67,23 +67,35 @@ function initFaqAccordion() {
 }
 
 /**
- * Lead Capture Form Validation and Submission
+ * Map budget select value to numeric BigDecimal
+ */
+function parseBudget(budgetValue) {
+  switch (budgetValue) {
+    case 'under_5k': return 5000.00;
+    case '5k_15k': return 15000.00;
+    case '15k_50k': return 50000.00;
+    case '50k_plus': return 100000.00;
+    default: return 5000.00;
+  }
+}
+
+/**
+ * Lead Capture Form Validation and API Submission
  */
 function initLeadFormValidation() {
   const form = document.getElementById('lead-capture-form');
   if (!form) return;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  // Basic phone regex (checks for at least 7 digits, allowing common formatting chars)
-  const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
 
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
     let isValid = true;
 
-    // Field lists to validate
+    // Field elements
     const firstName = document.getElementById('first-name');
     const lastName = document.getElementById('last-name');
+    const companyName = document.getElementById('business-name');
     const email = document.getElementById('email-address');
     const phone = document.getElementById('phone-number');
     const city = document.getElementById('city');
@@ -91,10 +103,10 @@ function initLeadFormValidation() {
     const buyerType = document.getElementById('buyer-type');
     const budget = document.getElementById('estimated-budget');
     const contactMethod = document.getElementById('contact-method');
+    const faxNumber = document.getElementById('fax-number');
     
     // Checkbox verification (Interested In)
     const interests = document.querySelectorAll('input[name="interest"]:checked');
-    const interestError = document.getElementById('interest-error');
     const checkboxGrid = document.querySelector('.checkbox-grid');
 
     // 1. Text Field Validations
@@ -156,9 +168,8 @@ function initLeadFormValidation() {
       clearError(email, 'email-error');
     }
 
-    // Stripped comparison check for phone numbers
     const cleanPhone = phone.value.replace(/\D/g, '');
-    if (cleanPhone.length < 10) {
+    if (cleanPhone.length < 7) {
       showError(phone, 'phone-error');
       isValid = false;
     } else {
@@ -173,22 +184,64 @@ function initLeadFormValidation() {
       checkboxGrid.parentElement.classList.remove('invalid');
     }
 
-    // Submit if all forms validate correctly
+    // Submit via API if valid
     if (isValid) {
       const submitBtn = document.getElementById('form-submit-btn');
+      const originalBtnHtml = submitBtn.innerHTML;
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Downloading Lists...';
+      submitBtn.innerText = 'Submitting...';
 
-      // Simulate API submit delay
-      setTimeout(() => {
-        showSuccessModal(
-          'Registration Successful!',
-          'Your inventory download link has been sent to your email. A liquidation specialist will reach out to you within 24 hours to help match your budget with active truck manifests.'
-        );
-        form.reset();
+      // Join interests into inventory category (max 50 chars for DTO constraint)
+      const selectedInterests = Array.from(interests).map(i => i.value).join(', ');
+      const categoryStr = selectedInterests.length > 50 ? selectedInterests.substring(0, 47) + '...' : selectedInterests;
+
+      // Construct API payload for PublicLeadSubmission
+      const payload = {
+        firstName: firstName.value.trim(),
+        lastName: lastName.value.trim(),
+        companyName: companyName ? companyName.value.trim() : '',
+        email: email.value.trim(),
+        phone: phone.value.trim(),
+        city: city.value.trim(),
+        state: state.value,
+        country: 'USA',
+        inventoryCategory: categoryStr,
+        inventoryCondition: 'Wholesale Liquidation',
+        requestedQuantity: 1,
+        budget: parseBudget(budget.value),
+        purchaseFrequency: contactMethod.value,
+        additionalRequirements: `Buyer Type: ${buyerType.value}; Preferred Contact: ${contactMethod.value}`,
+        source: 'WEBSITE',
+        faxNumber: faxNumber ? faxNumber.value : ''
+      };
+
+      try {
+        const response = await fetch('/api/public/leads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          showSuccessModal(
+            'Registration Successful!',
+            'Your inventory request has been received. A liquidation account specialist will email you our active manifest lists and contact you shortly.'
+          );
+          form.reset();
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          const msg = errData.message || errData.error || 'Submission failed. Please check your information and try again.';
+          alert(`Error submitting request: ${msg}`);
+        }
+      } catch (err) {
+        console.error('Lead submission failed:', err);
+        alert('Network error. Unable to submit lead at this time.');
+      } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `Get My Inventory List <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-      }, 1000);
+        submitBtn.innerHTML = originalBtnHtml;
+      }
     }
   });
 
@@ -268,12 +321,12 @@ function initFooterFormValidation() {
       setTimeout(() => {
         showSuccessModal(
           'Message Sent Successfully!',
-          'Your message has been delivered to our general logistics mailbox. One of our support coordinators will review your inquiries and respond within one business day.'
+          'Your message has been delivered to our general logistics mailbox. One of our support coordinators will review your inquiry and respond shortly.'
         );
         form.reset();
         submitBtn.disabled = false;
         submitBtn.innerText = 'Send Message';
-      }, 1000);
+      }, 800);
     }
   });
 
